@@ -1,0 +1,12 @@
+python train.py \
+ --workdir=./logdir \
+ --model VGG19-bn \
+ --dataset cifar10 \
+ --num_epochs 300 \
+ --sparsifier safe \
+ --lambda 0.0001 \
+ --lambda_schedule cosine \
+ --rho 0.1 \
+ --dual_update_interval 32 \
+ --sp .95 \
+ --seed 1

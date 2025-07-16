@@ -1,0 +1,11 @@
+*pkl
+.ipynb_checkpoints/
+*pyc
+wandb/
+__pycache__/
+.vscode/
+*.pth
+.vscode
+*.swp
+tmp/
+logdir/
