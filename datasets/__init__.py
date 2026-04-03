@@ -9,6 +9,14 @@ import tensorflow as tf
 import tensorflow_datasets as tfds
 
 
+CIFAR10C_CORRUPT_TYPES = [
+    'brightness', 'contrast', 'defocus_blur', 'elastic', 'fog', 'frost',
+    'frosted_glass_blur', 'gaussian_blur', 'gaussian_noise', 'impulse_noise',
+    'jpeg_compression', 'motion_blur', 'pixelate', 'saturate', 'shot_noise',
+    'snow', 'spatter', 'speckle_noise', 'zoom_blur'
+]
+
+
 class TFDataLoader:
     def __init__(
         self,
@@ -67,6 +75,20 @@ class TFDataLoader:
                 return batch
         
             
+        elif 'cifar10_corrupted' in dataset:
+            dataset_builder.download_and_prepare()
+            data_info = {'dataset': dataset, 'input_shape': (1, 32, 32, 3), 'num_classes': 10,
+                         'task': 'classification', 'test_set': 'test',
+                         'rgb_mean': 255*tf.constant([0.4914, 0.4822, 0.4465], shape=[1, 1, 3], dtype=tf.float32),
+                         'rgb_sdv': 255*tf.constant([0.2023, 0.1994, 0.2010], shape=[1, 1, 3], dtype=tf.float32)}
+            as_dataset_kwargs = {}
+
+            def decode_example(sample):
+                image = tf.cast(sample['image'], tf.float32)
+                image = (image - data_info['rgb_mean']) / data_info['rgb_sdv']
+                batch = {'sample': image, 'target': sample['label']}
+                return batch
+
         elif dataset=='cifar100':
             dataset_builder.download_and_prepare()
             data_info = {'dataset': dataset, 'input_shape': (1, 32, 32, 3), 'num_classes': 100, 

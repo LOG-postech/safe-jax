@@ -1,3 +1,7 @@
+#!/bin/bash
+# Train SAFE on CIFAR-100 ResNet32x2.
+# Usage: bash scripts/cifar100_resnet32.sh --checkpoint_name my_model [--sp .9] [--seed 2] ...
+
 python train.py \
  --workdir=./logdir \
  --model ResNet32x2 \
@@ -9,4 +13,5 @@ python train.py \
  --rho 0.1 \
  --dual_update_interval 32 \
  --sp .95 \
- --seed 1
+ --seed 1 \
+ "$@"

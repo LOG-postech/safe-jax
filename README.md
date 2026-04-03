@@ -16,68 +16,72 @@ Sparsifying neural networks often suffers from seemingly inevitable performance 
 
 ### Environments
 
-- Python 3.8.0
-- cuda 11.4.4
-- cudnn 8.6.0
-- nccl 2.11.4
+- Python 3.8
+- CUDA 11.x + cuDNN 8.x
+- JAX 0.4.4 / Flax 0.6.5 / Optax 0.1.3
+- [uv](https://docs.astral.sh/uv/getting-started/installation/) or conda
 
 ### Setup Instructions
 
 1.  **Clone the repository:**
     ```bash
-    git clone https://github.com/log-postech/safe-jax.git 
+    git clone https://github.com/log-postech/safe-jax.git
     cd safe-jax
     ```
 
-2.  **Create a virtual environment (recommended):**
-    * Conda:
-        ```bash
-        conda create -n safe python=3.8
-        conda activate safe
-        ```
+2.  **Install dependencies:**
 
-3.  **Install dependencies:**
+    With [uv](https://docs.astral.sh/uv/getting-started/installation/) (recommended):
     ```bash
+    uv sync
+    source .venv/bin/activate
+    ```
+
+    With conda + pip:
+    ```bash
+    conda create -n safe python=3.8
+    conda activate safe
     pip install -r requirements.txt
     ```
-    <!-- Please beware of JAX, jaxlib, flax, CUDA, CuDNN compatibility.
-    >If you encounter issues with specific versions, especially for PyTorch with CUDA, please refer to the official PyTorch installation guide: [https://pytorch.org/get-started/locally/](https://pytorch.org/get-started/locally/) -->
 
 ## 3. Usage
 
-### Running SAFE
+### Training
+
+Train with default hyperparameters. Override with flags (e.g. `--sp`, `--seed`, `--checkpoint_name`).
 
 ```bash
-python train.py \
- --workdir=./logdir \
- --model VGG19-bn \
- --dataset cifar10 \
- --num_epochs 300 \
- --sparsifier safe \
- --lambda 0.0001 \
- --lambda_schedule cosine \
- --rho 0.1 \
- --dual_update_interval 32 \
- --sp .95 \
- --seed 1
+bash scripts/cifar10_resnet20.sh --sp .95 --seed 1
 ```
 
-### Evalation
+**CIFAR-10:**
+
+| Model | Default checkpoint name | Script |
+| ----- | ----------------------- | ------ |
+| ResNet-20x2 | `cifar10_ResNet20x2_safe_0.95_s1_<timestamp>` | `scripts/cifar10_resnet20.sh` |
+| VGG19-bn | `cifar10_VGG19-bn_safe_0.95_s1_<timestamp>` | `scripts/cifar10_vgg19.sh` |
+
+**CIFAR-100:**
+
+| Model | Default checkpoint name | Script |
+| ----- | ----------------------- | ------ |
+| ResNet-32x2 | `cifar100_ResNet32x2_safe_0.95_s1_<timestamp>` | `scripts/cifar100_resnet32.sh` |
+| VGG19-bn | `cifar100_VGG19-bn_safe_0.95_s1_<timestamp>` | `scripts/cifar100_vgg19.sh` |
+
+### Evaluation
+
+Evaluate a trained checkpoint by name. Use `list_checkpoints.sh` to see available checkpoints.
 
 ```bash
-python eval.py
- --workdir=./logdir \
- --model VGG19-bn \
- --dataset cifar10 \
- --num_epochs 300 \
- --sparsifier safe \
- --lambda 0.0001 \
- --lambda_schedule cosine \
- --rho 0.1 \
- --dual_update_interval 32 \
- --sp .95 \
- --seed 1
+bash scripts/list_checkpoints.sh
 ```
+
+| Eval | Script |
+| ---- | ------ |
+| Clean (BNT) | `bash scripts/eval_clean.sh --checkpoint_name <NAME>` |
+| CIFAR-10C | `bash scripts/eval_cifar10c.sh --checkpoint_name <NAME>` |
+| l∞-PGD | `bash scripts/eval_adversarial_linf.sh --checkpoint_name <NAME>` |
+| l₂-PGD | `bash scripts/eval_adversarial_l2.sh --checkpoint_name <NAME>` |
 
 For language implementation, please refer to [safe-torch](https://github.com/log-postech/safe-torch)
 

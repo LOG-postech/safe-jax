@@ -9,3 +9,6 @@ __pycache__/
 *.swp
 tmp/
 logdir/
+*.egg-info/
+.venv/
+ckpt_index.json

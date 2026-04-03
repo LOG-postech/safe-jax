@@ -266,7 +266,24 @@ def main(argv):
     state, aux = configure_train(configs, output_dir, resume_checkpoint=FLAGS.resume_training)
     train_and_evaluate(configs, output_dir, state, *aux)
 
+    # register checkpoint
+    from ckpt_index import load_index, save_index
+    from datetime import datetime
+    name = FLAGS.checkpoint_name
+    if not name:
+        # Auto-generate: {dataset}_{model}_{sparsifier}_{sp}_s{seed}_{timestamp}
+        ts = datetime.now().strftime('%y%m%d_%H%M')
+        name = f"{configs.dataset}_{configs.model}_{configs.sparsifier}_{configs.sp}_s{configs.seed}_{ts}"
+    index = load_index()
+    index[name] = {
+        'path': output_dir,
+        'config': configs.to_dict()
+    }
+    save_index(index)
+    logging.info(f"Registered checkpoint: {name} -> {output_dir}")
+
 
 if __name__=='__main__':
     configure_flags()
+    flags.DEFINE_string('checkpoint_name', '', "Register this checkpoint under a short name for eval.")
     app.run(main)

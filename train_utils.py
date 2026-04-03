@@ -8,6 +8,7 @@ import tensorflow as tf
 
 import jax, flax, optax
 from jax import random, lax
+from flax import jax_utils
 import jax.numpy as jnp
 from flax.training import checkpoints
 from clu import metrics
@@ -62,7 +63,11 @@ def configure_train(config: ml_collections.ConfigDict,
                                             model, model_info, train_iter.data_info, 
                                             Metrics, len(train_iter), config)
     if resume_checkpoint:
-        checkpoints.restore_checkpoint(workdir, state)
+        # Checkpoints are saved in replicated form (with leading device dim).
+        # Restore into replicated target, then unreplicate.
+        state_replicated = jax_utils.replicate(state)
+        state_replicated = checkpoints.restore_checkpoint(workdir, state_replicated)
+        state = jax_utils.unreplicate(state_replicated)
         
     return state, (loss_type, Metrics, train_iter, eval_iter, sp_schedule, model_info)
     
