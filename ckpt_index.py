@@ -84,9 +84,17 @@ def main():
         if not index:
             print("No checkpoints registered.")
         else:
-            for name, path in sorted(index.items()):
+            invalid = False
+            for name, entry in sorted(index.items()):
+                path = entry.get('path') if isinstance(entry, dict) else entry
+                if not isinstance(path, str) or not path:
+                    print(f"Invalid checkpoint entry '{name}': expected a path string or a dict with a path string.", file=sys.stderr)
+                    invalid = True
+                    continue
                 exists = "✓" if os.path.exists(path) else "✗"
                 print(f"  {exists} {name:<30s} {path}")
+            if invalid:
+                sys.exit(1)
 
     elif cmd == 'get':
         if len(sys.argv) != 3:
